@@ -1,5 +1,4 @@
 public class Card {
-
     private String rank;
     private String suit;
 
@@ -20,7 +19,6 @@ public class Card {
     public String toString() {
         return rank + suit;     // allows for easy printing of a card
     }
-
     public static int getOrderedRank(String rank) {
         try {
             return Integer.parseInt(rank);
@@ -47,7 +45,6 @@ public class Card {
 
         return -1;
     }
-
     public static Card getCardByRank(String rank) {
         if (rank == null) return null;
         if (rank.length() != 1) return null;

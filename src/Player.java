@@ -1,17 +1,15 @@
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
-
 public class Player {
-
     private final List<Card> hand;
     private final List<String> books;
-
+    private Card prevCard;
     public Player() {
         this.hand = new ArrayList<>();
         this.books = new ArrayList<>();
     }
-
     public List<Card> getHand() {
         return hand;
     }
@@ -19,7 +17,6 @@ public class Player {
     public List<String> getBooks() {
         return books;
     }
-
     public void takeCard(Card card) {
         hand.add(card);
         sortHand();
@@ -46,7 +43,6 @@ public class Player {
             player.sortHand();
         }
     }
-
     public boolean findAndRemoveBooks() {
         for (int i = 0; i < hand.size() - 1; i++) {
             int frequency = 1;
@@ -64,29 +60,66 @@ public class Player {
 
         return false;
     }
-
-    public Card getCardByNeed() {
-        int index = 0;
-        int frequency = 1;
-
-        for (int i = 0; i < hand.size() - 1; i++) {
-            int count = 1;
-
-            for (int j = i + 1; j < hand.size(); j++) {
-                if (hand.get(i).getRank().equals(hand.get(j).getRank())) {  // tallies cards of the same rank
-                    count++;
+    public Card getCardByNeed(ArrayList<Card> oppTook, ArrayList<Card> oppDoesNotHave) {
+        List<Card> potentialPick = hand;
+        if(potentialPick.size() <= 4){
+            prevCard = potentialPick.get(0);
+            return potentialPick.get(0);
+        }
+        else{
+            HashMap<Card, Integer> frequencies = new HashMap<>();
+            for (int i = 0; i < hand.size() - 1; i++) {
+                int count = 1;
+                if(oppTook.size() > 4 && oppDoesNotHave.size() > 4){
+                    for(int k = oppTook.size()-1; k > oppTook.size()-4; k--){
+                        if(hand.get(i).getRank().equals(oppTook.get(k).getRank())){
+                            potentialPick.remove(hand.get(i));
+                        }
+                    }
+                    for(int l = oppDoesNotHave.size() - 1; l > oppDoesNotHave.size() - 4; l--){
+                        if(hand.get(i).getRank().equals(oppTook.get(l).getRank())){
+                            potentialPick.remove(hand.get(i));
+                        }
+                    }
+                }
+                for (int j = i + 1; j < potentialPick.size(); j++) {
+                    if (potentialPick.get(i).equals(potentialPick.get(j))) {  // tallies cards of the same rank
+                        count++;
+                    }
+                    if (!frequencies.containsKey(potentialPick.get(i))){
+                        frequencies.put(potentialPick.get(i), count);
+                    }
                 }
             }
-
-            if (count > frequency) {    // updates which card is the most frequently occurring
-                index = i;
-                frequency = count;
+            int max = 0;
+            Card mostOften = null;
+            for(Card i : frequencies.keySet()){
+                try {
+                    if(!i.getRank().equals(prevCard.getRank())){
+                        int a = frequencies.get(i);
+                        if(a > max){
+                            mostOften = i;
+                        }
+                    }
+                }catch(NullPointerException e){
+                    int a = frequencies.get(i);
+                    if(a > max){
+                        mostOften = i;
+                    }
+                }
+                if(prevCard != null) {
+                    if(!i.getRank().equals(prevCard.getRank())){
+                        int a = frequencies.get(i);
+                        if(a > max){
+                            mostOften = i;
+                        }
+                    }
+                }
             }
+            prevCard = mostOften;
+            return mostOften;
         }
-
-        return hand.get(index);
     }
-
     private int findCard(Card card) {
         for (int i = 0; i < hand.size(); i++) {
             if (hand.get(i).getRank().equals(card.getRank())) {     // find card by rank
@@ -119,10 +152,7 @@ public class Player {
             return Card.getOrderedRank(a.getRank()) - Card.getOrderedRank(b.getRank());         // otherwise, by rank
         });
     }
-
     private void sortBooks() {
         books.sort(Comparator.comparingInt(Card::getOrderedRank));  // sort books by rank using return
     }
-
-
 }
